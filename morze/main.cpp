@@ -51,7 +51,7 @@ struct signal
 		for (auto it = s.rbegin(); it != s.rend() && i < width; ++it, ++i)
 			if (*it)
 			{
-				line.setPosition({width - static_cast<float>(i), 0});
+				line.setPosition({static_cast<float>(i), 0});
 				window.draw(line);
 			}
 	}
@@ -59,7 +59,6 @@ struct signal
 
 sf::Packet& operator<<(sf::Packet& packet, signal const &s)
 {
-	std::cout << "packing\n";
 	packet << s.current_time;
 	for (auto it = s.s.begin(); it != s.s.end(); ++it)
 		packet << *it;
@@ -68,7 +67,6 @@ sf::Packet& operator<<(sf::Packet& packet, signal const &s)
 
 sf::Packet& operator>>(sf::Packet& packet, signal &s)
 {
-	std::cout << "unpacking\n";
 	packet >> s.current_time;
 	for (auto it = s.s.begin(); it != s.s.end(); ++it)
 		packet >> *it;
@@ -223,10 +221,12 @@ int main(int argc, char **argv)
 		auto view = sf::View{{0, 0, 640, 480}};
 		view.setViewport(sf::FloatRect{0.0f, 0.1f, 1.0f, 0.35f});
 		window.setView(view);
+		line.setFillColor(sf::Color::White);
 		send_signal.draw(window, line);
 
 		view.setViewport(sf::FloatRect{0.0f, 0.55f, 1.0f, 0.35f});
 		window.setView(view);
+		line.setFillColor(sf::Color::Yellow);
 		receive_signal.draw(window, line);
 
 		window.setView(window.getDefaultView());
