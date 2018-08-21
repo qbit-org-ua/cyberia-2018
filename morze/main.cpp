@@ -131,10 +131,10 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	sf::Clock fps_clock;
-	std::deque<sf::Time> fps_timestamps;
-	sf::Text fps_text("", font, 12);
-	fps_text.setColor(sf::Color::Red);
+	//sf::Clock fps_clock;
+	//std::deque<sf::Time> fps_timestamps;
+	//sf::Text fps_text("", font, 12);
+	//fps_text.setColor(sf::Color::Red);
 	//fps_text.setOutlineColor(sf::Color::Red);
 
 	sf::RectangleShape line({1.0f, height});
@@ -191,11 +191,11 @@ int main(int argc, char **argv)
 			receive_signal.iterate();
 		}
 
-		fps_timestamps.push_back(fps_clock.getElapsedTime());
-		while (fps_timestamps.size() > 0
-				&& fps_timestamps.back() - fps_timestamps.front() > sf::seconds(1))
-			fps_timestamps.pop_front();
-		fps_text.setString(std::to_string(fps_timestamps.size()) + " fps");
+		//fps_timestamps.push_back(fps_clock.getElapsedTime());
+		//while (fps_timestamps.size() > 0
+		//		&& fps_timestamps.back() - fps_timestamps.front() > sf::seconds(1))
+		//	fps_timestamps.pop_front();
+		//fps_text.setString(std::to_string(fps_timestamps.size()) + " fps");
 
 
 		window.clear();
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 
 		window.setView(window.getDefaultView());
 	
-		window.draw(fps_text);
+		//window.draw(fps_text);
 
 		window.display();
 	}
