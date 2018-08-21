@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
 	signal send_signal(width);
 	signal receive_signal(width + signals_per_second);
-	receive_signal.set_current_time(10000);
+	receive_signal.set_current_time(1000000000);
 
 	socket_sender sender(argv[2], std::stoi(argv[3]));
 	socket_receiver receiver(std::stoi(argv[1]));
@@ -179,7 +179,8 @@ int main(int argc, char **argv)
 			while (receiver.receive(time_stamp))
 			{
 				//std::cout << "received " << time_stamp << "\n";
-				if (time_stamp + static_cast<int>(receive_signal.s.size()) < receive_signal.current_time)
+				if (time_stamp < receive_signal.current_time - static_cast<int>(receive_signal.s.size())
+						|| time_stamp > receive_signal.current_time + 2 * static_cast<int>(receive_signal.s.size()))
 					receive_signal.set_current_time(time_stamp);
 				receive_signal.update_cache(time_stamp);
 				receive_signal.update_cache(time_stamp - 1);
