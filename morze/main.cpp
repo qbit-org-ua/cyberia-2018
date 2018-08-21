@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 			sf::Style::Default ^ sf::Style::Resize,
 			sf::ContextSettings{0, 0, 8}
 	};
-	//window.setVerticalSyncEnabled(true);
+	window.setVerticalSyncEnabled(true);
 
 	int const signals_per_second = 100;
 	int const sends_per_second = 5;
