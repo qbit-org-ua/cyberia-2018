@@ -57,6 +57,24 @@ struct signal
 	}
 };
 
+sf::Packet& operator<<(sf::Packet& packet, signal const &s)
+{
+	std::cout << "packing\n";
+	packet << s.current_time;
+	for (auto it = s.s.begin(); it != s.s.end(); ++it)
+		packet << *it;
+	return packet;
+}
+
+sf::Packet& operator>>(sf::Packet& packet, signal &s)
+{
+	std::cout << "unpacking\n";
+	packet >> s.current_time;
+	for (auto it = s.s.begin(); it != s.s.end(); ++it)
+		packet >> *it;
+	return packet;
+}
+
 bool check_if_connected(sf::Socket::Status status)
 {
 	return status == sf::Socket::Status::Done || status == sf::Socket::Status::NotReady;
@@ -75,9 +93,9 @@ struct socket_sender
 		port = port1;
 	}
 
-	void send(int time_stamp)
+	void send(sf::Packet &p)
 	{
-		socket.send(&time_stamp, sizeof(int), addr, port);
+		socket.send(p, addr, port);
 	}
 };
 
@@ -93,13 +111,11 @@ struct socket_receiver
 		client.bind(port);
 	}
 
-	bool receive(int &time_stamp)
+	bool receive(sf::Packet &p)
 	{
-		size_t received = 0;
 		sf::IpAddress remote_addr;
 		unsigned short remote_port;
-		auto code = client.receive(&time_stamp, sizeof(int), received, remote_addr, remote_port);
-		//std::cout << code << " " << time_stamp << std::endl;
+		auto code = client.receive(p, remote_addr, remote_port);
 		return code == sf::Socket::Status::Done;
 	}
 };
@@ -120,6 +136,7 @@ int main(int argc, char **argv)
 	//window.setVerticalSyncEnabled(true);
 
 	int const signals_per_second = 100;
+	int const sends_per_second = 5;
 
 	sf::Clock clock;
 	sf::Time time;
@@ -142,6 +159,7 @@ int main(int argc, char **argv)
 	signal send_signal(width);
 	signal receive_signal(width + signals_per_second);
 	receive_signal.set_current_time(1000000000);
+	signal buf_signal(width);
 
 	socket_sender sender(argv[2], std::stoi(argv[3]));
 	socket_receiver receiver(std::stoi(argv[1]));
@@ -168,27 +186,34 @@ int main(int argc, char **argv)
 		{
 			time -= stepTime;
 
-			if (is_pressed)
-			{
-				send_signal.update_cache(send_signal.current_time);
-				//std::cout << "sending " << send_signal.current_time << "\n";
-				sender.send(send_signal.current_time);
-			}
-
-			int time_stamp = 0;
-			while (receiver.receive(time_stamp))
-			{
-				//std::cout << "received " << time_stamp << "\n";
-				if (time_stamp < receive_signal.current_time - static_cast<int>(receive_signal.s.size())
-						|| time_stamp > receive_signal.current_time + 2 * static_cast<int>(receive_signal.s.size()))
-					receive_signal.set_current_time(time_stamp);
-				receive_signal.update_cache(time_stamp);
-				receive_signal.update_cache(time_stamp - 1);
-				receive_signal.update_cache(time_stamp + 1);
-			}
-
 			send_signal.iterate();
 			receive_signal.iterate();
+
+			if (is_pressed)
+				send_signal.update_cache(send_signal.current_time);
+
+			if (send_signal.current_time % (signals_per_second / sends_per_second) == 0)
+			{
+				sf::Packet packet;
+				packet << send_signal;
+				sender.send(packet);
+			}
+
+			int const signal_size = static_cast<int>(receive_signal.s.size());
+			sf::Packet packet;
+			while (receiver.receive(packet))
+			{
+				packet >> buf_signal;
+				for (int ts = 0; ts < static_cast<int>(buf_signal.s.size()); ++ts)
+					if (buf_signal.s[ts] == true)
+					{
+						int time_stamp = ts + buf_signal.current_time;
+						if (time_stamp < receive_signal.current_time - signal_size
+								|| time_stamp > receive_signal.current_time + 2 * signal_size)
+							receive_signal.set_current_time(time_stamp);
+						receive_signal.update_cache(time_stamp);
+					}
+			}
 		}
 
 		//fps_timestamps.push_back(fps_clock.getElapsedTime());
