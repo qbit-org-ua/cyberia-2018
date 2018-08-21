@@ -125,11 +125,11 @@ int main(int argc, char **argv)
 	sf::Time time;
 	sf::Time stepTime = sf::seconds(1.0 / signals_per_second);
 
-	sf::Font font;
-	if (!font.loadFromFile("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-B.ttf"))
-	{
-		return EXIT_FAILURE;
-	}
+	//sf::Font font;
+	//if (!font.loadFromFile("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-B.ttf"))
+	//{
+	//	return EXIT_FAILURE;
+	//}
 
 	//sf::Clock fps_clock;
 	//std::deque<sf::Time> fps_timestamps;
