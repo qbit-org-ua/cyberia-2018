@@ -47,8 +47,7 @@ bool check_if_connected(sf::Socket::Status status)
 
 struct socket_sender
 {
-	sf::TcpSocket socket;
-	bool is_connected = false;
+	sf::UdpSocket socket;
 	sf::IpAddress addr;
 	unsigned short port;
 
@@ -61,36 +60,29 @@ struct socket_sender
 
 	void send(bool is_pressed)
 	{
-		if (!is_connected)
-			socket.connect(addr, port);
-		auto code = socket.send(&is_pressed, 1);
-		is_connected = check_if_connected(code);
+		socket.send(&is_pressed, 1, addr, port);
 	}
 };
 
 struct socket_receiver
 {
-	sf::TcpListener listener;
-	sf::TcpSocket client;
-	bool is_connected = false;
+	sf::UdpSocket client;
 	unsigned short port;
 
 	socket_receiver(unsigned short port1)
 	{
-		listener.setBlocking(false);
 		client.setBlocking(false);
 		port = port1;
-		listener.listen(port);
+		client.bind(port);
 	}
 
 	bool receive()
 	{
-		if (!is_connected)
-			listener.accept(client);
 		bool is_pressed = false;
 		size_t received = 0;
-		auto code = client.receive(&is_pressed, 1, received);
-		is_connected = check_if_connected(code);
+		sf::IpAddress remote_addr;
+		unsigned short remote_port;
+		client.receive(&is_pressed, 1, received, remote_addr, remote_port);
 		return is_pressed;
 	}
 };
