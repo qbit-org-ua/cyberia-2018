@@ -135,12 +135,14 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 
 	int const buf_len = 300;
-	int const width = 640, height = 480;
+
+	auto m = sf::VideoMode::getFullscreenModes()[0];
+	unsigned int const width = m.width, height = m.height;
 
 	sf::RenderWindow window{
-			sf::VideoMode{width, height},
-			"Graphs",
-			sf::Style::Default ^ sf::Style::Resize,
+			sf::VideoMode{width, height, m.bitsPerPixel},
+			"100000000000",
+			sf::Style::Fullscreen,
 			sf::ContextSettings{0, 0, 8}
 	};
 	window.setVerticalSyncEnabled(true);
@@ -240,7 +242,7 @@ int main(int argc, char **argv)
 
 		window.clear();
 
-		auto view = sf::View{{0, 0, 640, 240}};
+		auto view = sf::View{{0, 0, static_cast<float>(width), static_cast<float>(height / 2)}};
 		view.setViewport(sf::FloatRect{0.0f, 0.0f, 1.0f, 0.5f});
 		window.setView(view);
 		text.setFillColor(sf::Color::White);

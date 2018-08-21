@@ -118,12 +118,14 @@ int main(int argc, char **argv)
 	if (argc != 4)
 		return EXIT_FAILURE;
 
-	int const width = 640, height = 480;
+	auto m = sf::VideoMode::getFullscreenModes()[0];
+	unsigned int const width = m.width, height = m.height;
+	unsigned int const fake_width = 640;
 
 	sf::RenderWindow window{
-			sf::VideoMode{width, height},
-			"Graphs",
-			sf::Style::Default ^ sf::Style::Resize,
+			sf::VideoMode{width, height, m.bitsPerPixel},
+			"100000000000",
+			sf::Style::Fullscreen,
 			sf::ContextSettings{0, 0, 8}
 	};
 	window.setVerticalSyncEnabled(true);
@@ -147,12 +149,12 @@ int main(int argc, char **argv)
 	//fps_text.setColor(sf::Color::Red);
 	//fps_text.setOutlineColor(sf::Color::Red);
 
-	sf::RectangleShape line({1.0f, height});
+	sf::RectangleShape line({1.0f, static_cast<float>(height)});
 
-	signal send_signal(width);
-	signal receive_signal(width + signals_per_second);
+	signal send_signal(fake_width);
+	signal receive_signal(fake_width + signals_per_second);
 	receive_signal.set_current_time(1000000000);
-	signal buf_signal(width);
+	signal buf_signal(fake_width);
 
 	socket_sender sender(argv[2], std::stoi(argv[3]));
 	socket_receiver receiver(std::stoi(argv[1]));
@@ -218,7 +220,7 @@ int main(int argc, char **argv)
 
 		window.clear();
 
-		auto view = sf::View{{0, 0, 640, 480}};
+		auto view = sf::View{{0, 0, static_cast<float>(fake_width), static_cast<float>(height)}};
 		view.setViewport(sf::FloatRect{0.0f, 0.1f, 1.0f, 0.35f});
 		window.setView(view);
 		line.setFillColor(sf::Color::White);
