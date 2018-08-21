@@ -32,7 +32,7 @@ struct signal
 
 	void update_cache(int time_stamp)
 	{
-		int index = time_stamp - current_time;
+		int index = current_time - time_stamp;
 		if (index >= 0 && index < static_cast<int>(s.size()))
 			s[index] = true;
 	}
@@ -73,11 +73,6 @@ sf::Packet& operator>>(sf::Packet& packet, signal &s)
 	for (auto it = s.s.begin(); it != s.s.end(); ++it)
 		packet >> *it;
 	return packet;
-}
-
-bool check_if_connected(sf::Socket::Status status)
-{
-	return status == sf::Socket::Status::Done || status == sf::Socket::Status::NotReady;
 }
 
 struct socket_sender
@@ -207,9 +202,9 @@ int main(int argc, char **argv)
 				for (int ts = 0; ts < static_cast<int>(buf_signal.s.size()); ++ts)
 					if (buf_signal.s[ts] == true)
 					{
-						int time_stamp = ts + buf_signal.current_time;
-						if (time_stamp < receive_signal.current_time - signal_size
-								|| time_stamp > receive_signal.current_time + 2 * signal_size)
+						int time_stamp = buf_signal.current_time - ts;
+						if (time_stamp < receive_signal.current_time - 2 * signal_size
+								|| time_stamp > receive_signal.current_time + signal_size)
 							receive_signal.set_current_time(time_stamp);
 						receive_signal.update_cache(time_stamp);
 					}
