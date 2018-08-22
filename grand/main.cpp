@@ -209,13 +209,16 @@ int main(int argc, char **argv)
 		time += clock.restart();
 		while (time > stepTime)
 		{
+			if (send_signal.last_signal_time == current_time)
+			{
+				sf::Packet packet;
+				packet << send_signal;
+				sender1.send(packet);
+				sender2.send(packet);
+			}
+
 			++current_time;
 			time -= stepTime;
-
-			sf::Packet packet;
-			packet << send_signal;
-			sender1.send(packet);
-			sender2.send(packet);
 		}
 
 		sf::Packet packet;
