@@ -64,9 +64,14 @@ struct signal
 		}
 	}
 
+	bool is_on(int current_time)
+	{
+		return last_signal_time + delay >= current_time;
+	}
+
 	void draw(sf::RenderTarget &window, sf::RectangleShape &rect, int current_time)
 	{
-		if (last_signal_time + delay >= current_time)
+		if (is_on(current_time))
 		{
 			if (last_signal_type == attempt)
 				rect.setFillColor(sf::Color::Yellow);
@@ -172,6 +177,7 @@ int main(int argc, char **argv)
 	std::sort(success_keys.begin(), success_keys.end());
 
 	std::set<char> pressed_keys;
+	bool all_pressed = false;
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -237,6 +243,23 @@ int main(int argc, char **argv)
 		window.clear();
 
 		auto view = sf::View{{0, 0, 1, 1}};
+		all_pressed |= send_signal.is_on(current_time)
+				&& receive_signal1.is_on(current_time)
+				&& receive_signal2.is_on(current_time);
+
+		if (all_pressed)
+		{
+			view.setViewport(sf::FloatRect{0.0f, 0.0f, 1.0f, 1.0f});
+			window.setView(view);
+			rectangle.setFillColor(sf::Color::Green);
+			window.draw(rectangle);
+
+			view.setViewport(sf::FloatRect{0.1f, 0.1f, 0.8f, 0.8f});
+			window.setView(view);
+			rectangle.setFillColor(sf::Color::Black);
+			window.draw(rectangle);
+		}
+
 		view.setViewport(sf::FloatRect{0.2f, 0.2f, 0.2f, 0.2f});
 		window.setView(view);
 		receive_signal1.draw(window, rectangle, current_time);
